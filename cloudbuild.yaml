@@ -1,0 +1,33 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'BUILDPLATFORM=linux/amd64'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/openwebui-unnest:latest'
+      - '.'
+
+  # 2. Push the image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/openwebui-unnest:latest']
+
+  # 3. Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'openwebui-unnest'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/openwebui-unnest:latest'
+      - '--region'
+      - 'europe-west1'
+      - '--platform'
+      - 'managed'
+      - '--quiet'
+
+# Store the image name for later use
+images:
+  - 'gcr.io/$PROJECT_ID/openwebui-unnest:latest'
